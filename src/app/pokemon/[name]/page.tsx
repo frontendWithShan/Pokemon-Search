@@ -53,17 +53,17 @@ export default async function PokemonDetails({
         <div className="container mx-auto px-4 py-6">
           <Breadcrumbs
             items={[
-              { label: 'Home', href: '/' },
+              { label: 'Home', href: '/home' },
               { label: pokemon.name, href: '#' },
             ]}
           />
           
           <Link 
-            href="/" 
+            href="/home" 
             className="inline-flex items-center mt-4 text-white/90 hover:text-white transition-colors duration-200 group"
           >
             <ArrowLeft className="h-5 w-5 mr-2 transform group-hover:-translate-x-1 transition-transform duration-200" />
-            Back to Pokédex
+            Back 
           </Link>
         </div>
       </div>

@@ -3,17 +3,11 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   compiler: {
-    // Enables the styled-components SWC transform
     styledComponents: true,
   },
-  // Updated for Next.js 15
-  serverExternalPackages: ['axios'], // Moved from experimental
+  serverExternalPackages: ['axios'], 
   experimental: {
-    // Removed appDir as it's now stable
-    // Removed serverComponentsExternalPackages (moved above)
-    // Removed optimizeServerReact (deprecated)
   },
-  // Configure external image domains
   images: {
     remotePatterns: [
       {
@@ -24,7 +18,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Add custom headers to prevent unwanted extensions from modifying the DOM
   async headers() {
     return [
       {
@@ -42,12 +35,9 @@ const nextConfig: NextConfig = {
       },
     ];
   },
-  // Enable proper source maps for debugging
   productionBrowserSourceMaps: true,
-  // Configure webpack to handle hydration warnings
   webpack: (config, { isServer }) => {
     if (!isServer) {
-      // Add hydration warning handling for client-side
       config.resolve.alias = {
         ...config.resolve.alias,
         'react-dom$': 'react-dom/profiling',

@@ -48,7 +48,7 @@ export default function LandingPage() {
           </Link>
           
           <div className="text-white/80 text-sm">
-            Powered by PokéAPI
+            © Shantanu Singh
           </div>
         </div>
 
