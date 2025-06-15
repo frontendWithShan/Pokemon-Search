@@ -22,19 +22,11 @@ export function usePokemonSearch() {
   const [type, setType] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     fetchAllPokemon();
   }, []);
-  
-  useEffect(() => {
-    if (type) {
-      fetchPokemonByType(type);
-    } else if (allPokemon.length > 0) {
-      setFilteredPokemon(allPokemon);
-      setDisplayedPokemon(allPokemon);
-    }
-  }, [type, allPokemon]);
 
   const fetchAllPokemon = async () => {
     try {
@@ -63,42 +55,62 @@ export function usePokemonSearch() {
       }));
       
       setFilteredPokemon(pokemonList);
-      setDisplayedPokemon(pokemonList);
+      return pokemonList;
     } catch (error) {
       console.error('Error fetching Pokemon by type:', error);
+      return [];
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearch = () => {
-  if (!searchTerm.trim()) {
-    setDisplayedPokemon(filteredPokemon);
-    return;
-  }
+  const handleSearch = async (searchValue: string, typeValue: string) => {
+    setSearchTerm(searchValue);
+    setType(typeValue);
+    setHasSearched(true);
+    setLoading(true);
 
-  const searchResults = filteredPokemon.filter(pokemon =>
-    pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  
-  setDisplayedPokemon(searchResults);
-};
+    try {
+      let pokemonToFilter: Pokemon[] = [];
+
+      if (typeValue) {
+        pokemonToFilter = await fetchPokemonByType(typeValue);
+      } else {
+        pokemonToFilter = allPokemon;
+      }
+
+      let results = pokemonToFilter;
+      if (searchValue.trim()) {
+        results = pokemonToFilter.filter(pokemon =>
+          pokemon.name.toLowerCase().includes(searchValue.toLowerCase())
+        );
+      }
+
+      setDisplayedPokemon(results);
+      setFilteredPokemon(pokemonToFilter); 
+    } catch (error) {
+      console.error('Error in search:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const clearFilters = useCallback(() => {
     setType('');
     setSearchTerm('');
+    setHasSearched(false);
     setFilteredPokemon(allPokemon);
     setDisplayedPokemon(allPokemon);
   }, [allPokemon]);
 
   return {
+    allPokemon: filteredPokemon, 
     filteredList: displayedPokemon,
     loading,
     searchTerm,
-    setSearchTerm,
     type,
-    setType,
     handleSearch,
-    clearFilters
+    clearFilters,
+    hasSearched
   };
 }

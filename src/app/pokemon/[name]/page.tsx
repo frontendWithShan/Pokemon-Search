@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { ArrowLeft, Zap, Shield, Sword, Heart, Gauge, Star } from 'lucide-react';
+import { Suspense } from 'react';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export default async function PokemonDetails({
   params,
@@ -48,6 +50,7 @@ export default async function PokemonDetails({
   const primaryType = pokemon.types[0]?.type.name || 'normal';
 
   return (
+    <Suspense fallback={<LoadingSpinner />}>
     <div className={`min-h-screen bg-gradient-to-br ${typeGradients[primaryType]} via-opacity-90`}>
       <div className="bg-black/20 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-6">
@@ -212,5 +215,6 @@ export default async function PokemonDetails({
         </div>
       </main>
     </div>
+    </Suspense>
   );
 }
