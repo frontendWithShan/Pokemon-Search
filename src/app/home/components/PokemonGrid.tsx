@@ -6,7 +6,7 @@ import LoadingSpinner from '@/components/LoadingSpinner';
 import { useState, useEffect } from 'react';
 
 export function PokemonGrid() {
-  const { filteredList, loading, searchTerm, type, clearFilters } = usePokemonSearch();
+  const { filteredList, loading, searchTerm, type, clearFilters,hasSearched  } = usePokemonSearch();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -23,7 +23,7 @@ export function PokemonGrid() {
       {isFiltered && (
         <div className="mb-6 px-2">
           <div className="text-sm text-gray-600 bg-white/70 backdrop-blur-sm rounded-lg px-4 py-3 inline-block">
-            {hasResults ? (
+            {hasSearched  && (
               <>
                 Found <span className="font-semibold text-gray-900">{filteredList.length}</span> Pokémon
                 {searchTerm && (
@@ -33,7 +33,8 @@ export function PokemonGrid() {
                   <> of type <span className="font-medium text-purple-600 capitalize">{type}</span></>
                 )}
               </>
-            ) : (
+            )}
+            {!hasResults &&(
               <>
                 No Pokémon found
                 {searchTerm && (

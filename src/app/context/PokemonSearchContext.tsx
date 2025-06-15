@@ -26,6 +26,7 @@ interface PokemonSearchContextType {
   loading: boolean;
   searchTerm: string;
   type: string;
+  hasSearched: boolean;
   setSearchTerm: (term: string) => void;
   setType: (type: string) => void;
   handleSearch: () => void;
@@ -40,6 +41,7 @@ export function PokemonSearchProvider({
   children: ReactNode;
   initialTypes?: PokemonType[];
 }) {
+  const [hasSearched, setHasSearched] = useState(false);
   const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
   const [filteredPokemon, setFilteredPokemon] = useState<Pokemon[]>([]);
   const [displayedPokemon, setDisplayedPokemon] = useState<Pokemon[]>([]);
@@ -110,6 +112,7 @@ export function PokemonSearchProvider({
   };
 
   const handleSearch = () => {
+    
     if (!searchTerm.trim()) {
       setDisplayedPokemon(filteredPokemon);
       return;
@@ -120,10 +123,12 @@ export function PokemonSearchProvider({
     );
     
     setDisplayedPokemon(searchResults);
+    setHasSearched(true);
   };
 
   const clearFilters = () => {
     setType('');
+    setHasSearched(false); 
     setSearchTerm('');
     setFilteredPokemon(allPokemon);
     setDisplayedPokemon(allPokemon);
@@ -143,6 +148,7 @@ export function PokemonSearchProvider({
         loading,
         searchTerm,
         type,
+        hasSearched,
         setSearchTerm,
         setType,
         handleSearch,
