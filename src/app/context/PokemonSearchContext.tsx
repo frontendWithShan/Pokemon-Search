@@ -29,7 +29,7 @@ interface PokemonSearchContextType {
   hasSearched: boolean;
   setSearchTerm: (term: string) => void;
   setType: (type: string) => void;
-  handleSearch: () => void;
+  handleSearch: (searchTerm?: string, type?: string) => void;
   clearFilters: () => void;
 }
 
@@ -49,6 +49,11 @@ export function PokemonSearchProvider({
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true); 
   const [mounted, setMounted] = useState(false);
+  
+  const [pokemonCache, setPokemonCache] = useState<{
+    data: Pokemon[] | null;
+    timestamp: number;
+  }>({ data: null, timestamp: 0 });
 
   useEffect(() => {
     setMounted(true);
@@ -71,19 +76,28 @@ export function PokemonSearchProvider({
     }
   }, [type, allPokemon, mounted]);
 
-  useEffect(() => {
-    if (!mounted) return;
-    // handleSearch();
-  },);
-
   const fetchAllPokemon = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1000');
-      const data = await response.json();
-      setAllPokemon(data.results);
-      setFilteredPokemon(data.results);
-      setDisplayedPokemon(data.results);
+      
+      if (pokemonCache.data && 
+          Date.now() - pokemonCache.timestamp < 86400000) {
+        setAllPokemon(pokemonCache.data);
+        setFilteredPokemon(pokemonCache.data);
+        setDisplayedPokemon(pokemonCache.data);
+      } else {
+        const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1000');
+        const data = await response.json();
+        
+        setAllPokemon(data.results);
+        setFilteredPokemon(data.results);
+        setDisplayedPokemon(data.results);
+        
+        setPokemonCache({
+          data: data.results,
+          timestamp: Date.now()
+        });
+      }
     } catch (error) {
       console.error('Error fetching Pokemon:', error);
     } finally {
@@ -111,19 +125,30 @@ export function PokemonSearchProvider({
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = (newSearchTerm?: string, newType?: string) => {
+    setHasSearched(true);
     
-    if (!searchTerm.trim()) {
-      setDisplayedPokemon(filteredPokemon);
+    const termToUse = newSearchTerm !== undefined ? newSearchTerm : searchTerm;
+    const typeToUse = newType !== undefined ? newType : type;
+    
+    if (newSearchTerm !== undefined) setSearchTerm(newSearchTerm);
+    if (newType !== undefined) setType(newType);
+    
+    let baseList = allPokemon;
+    if (typeToUse) {
+      baseList = typeToUse === type ? filteredPokemon : allPokemon;
+    }
+    
+    if (!termToUse.trim()) {
+      setDisplayedPokemon(baseList);
       return;
     }
 
-    const searchResults = filteredPokemon.filter(pokemon =>
-      pokemon.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const searchResults = baseList.filter(pokemon =>
+      pokemon.name.toLowerCase().includes(termToUse.toLowerCase())
     );
     
     setDisplayedPokemon(searchResults);
-    setHasSearched(true);
   };
 
   const clearFilters = () => {

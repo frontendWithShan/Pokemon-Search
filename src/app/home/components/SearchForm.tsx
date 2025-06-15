@@ -1,6 +1,6 @@
 'use client';
 import { usePokemonSearch } from "@/app/context/PokemonSearchContext";
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 interface PokemonType {
   name: string;
@@ -8,44 +8,31 @@ interface PokemonType {
 }
 
 export function SearchForm({ serverTypes }: { serverTypes: PokemonType[] }) {
-  const {
-    type,
-    setType,
-    searchTerm,
-    setSearchTerm,
-    loading,
-    handleSearch
-  } = usePokemonSearch();
+  const [localType, setLocalType] = useState('');
+  const [localSearchTerm, setLocalSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  
+  // Context
+  const context = usePokemonSearch();
 
-  const [mounted, setMounted] = useState(false);
+  const handleManualSearch = () => {
+    setIsSearching(true);
+    
+    if (context) {
+      context.handleSearch(localSearchTerm, localType);
+    }
+    
+    setIsSearching(false);
+  };
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleManualSearch();
+    }
+  };
 
-  if (!mounted) {
-    return (
-      <div className="w-full max-w-6xl mx-auto mb-8 px-4">
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-white/20">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="relative lg:w-64">
-              <div className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-700 text-sm font-medium">
-                Loading types...
-              </div>
-            </div>
-            <div className="relative flex-1">
-              <div className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-700 text-sm">
-                Search Pokémon by name...
-              </div>
-            </div>
-            <div className="px-6 py-4 bg-gray-400 text-white rounded-xl font-medium">
-              Search
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const loading = context?.loading ?? isSearching;
 
   return (
     <div className="w-full max-w-6xl mx-auto mb-8 px-4">
@@ -53,8 +40,8 @@ export function SearchForm({ serverTypes }: { serverTypes: PokemonType[] }) {
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="relative lg:w-64">
             <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
+              value={localType}
+              onChange={(e) => setLocalType(e.target.value)}
               className="w-full appearance-none bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-700 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
             >
@@ -71,20 +58,21 @@ export function SearchForm({ serverTypes }: { serverTypes: PokemonType[] }) {
             <input
               type="text"
               placeholder="Search Pokémon by name..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              value={localSearchTerm}
+              onChange={(e) => setLocalSearchTerm(e.target.value)}
               className="w-full bg-white border border-gray-200 rounded-xl px-4 py-4 text-gray-700 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={loading}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch();
-                }
-              }}
+              onKeyDown={handleKeyPress}
             />
+            {loading && (
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
           </div>
 
-           <button
-            onClick={handleSearch} 
+          <button
+            onClick={handleManualSearch}
             disabled={loading}
             className="px-6 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
